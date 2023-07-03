@@ -11,19 +11,19 @@ func AddMapping(c *fiber.Ctx) error {
 	link := new(database.Link)
 	c.BodyParser(link)
 	if link.ShortURL == "" || link.LongURL == "" || link.Description == "" {
-		return c.Status(400).JSON(fiber.Map{
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"status":  "error",
-			"message": "Empty fields in body",
+			"message": "Missing required fields",
 		})
 	}
 	username := c.Params("username")
 	if err := database.StoreMapping(link, username); err != nil {
-		return c.Status(500).JSON(fiber.Map{
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"status":  "error",
 			"message": "Cannot store mapping",
 		})
 	}
-	return c.Status(201).JSON(fiber.Map{
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
 		"status":  "success",
 		"message": "Mapping stored",
 	})

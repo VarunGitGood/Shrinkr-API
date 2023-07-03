@@ -21,7 +21,10 @@ type UserInfo struct {
 
 // working
 func Base(c *fiber.Ctx) error {
-	return c.SendString("API WORKING BEEP BOP")
+	return c.Status(fiber.StatusAccepted).JSON(fiber.Map{
+		"status":  "success",
+		"message": "Welcome to Shrinkr",
+	})
 }
 
 // OAuth2
