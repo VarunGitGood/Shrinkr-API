@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"api/config"
+	"fmt"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gofiber/fiber/v2"
@@ -28,6 +29,7 @@ func AuthGuard(c *fiber.Ctx) error {
 	}
 	claims := token.Claims.(jwt.MapClaims)
 	email := claims["email"].(string)
-	c.Request().Header.Set("UserEmail", email)
+	c.Request().Header.Set("Email", email)
+	fmt.Println(email)
 	return c.Next()
 }

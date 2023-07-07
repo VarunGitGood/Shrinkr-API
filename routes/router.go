@@ -8,7 +8,7 @@ import (
 
 // SetupRoutes sets up all routes for the application
 func SetupRoutes(app *fiber.App) {
-	api := app.Group("/")
+	api := app.Group("/shrinkr")
 	api.Get("/", handlers.Base)
 	api.Get("/login", handlers.Login)
 	api.Get("/token", handlers.GetJWT)
@@ -21,4 +21,6 @@ func SetupRoutes(app *fiber.App) {
 	userAPI := api.Group("/user")
 	userAPI.Use(middleware.AuthGuard)
 	api.Get("/:username", handlers.GetUser)
+
+	api.Get("/shnk/:shortURL", handlers.RedirectToLongLink)
 }

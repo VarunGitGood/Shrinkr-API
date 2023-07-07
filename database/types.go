@@ -12,7 +12,7 @@ type LinkInfo struct {
 }
 
 type Link struct {
-	ShortURL    string
-	LongURL     string
-	Description string
+	ShortURL    string `json:"shortURL"`
+	LongURL     string `json:"longURL"`
+	Description string `json:"description"`
 }
