@@ -17,6 +17,7 @@ func main() {
 
 	// connect to database
 	database.ConnectRedis()
+	database.ConnectMongo()
 
 	// Middleware
 	app.Use(logger.New())

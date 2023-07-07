@@ -2,10 +2,11 @@ package handlers
 
 import (
 	"api/config"
+	"api/database"
 	"context"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
+	"time"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gofiber/fiber/v2"
@@ -57,7 +58,15 @@ func GetJWT(c *fiber.Ctx) error {
 	body, err := ioutil.ReadAll(userData.Body)
 	var userInfo UserInfo
 	err = json.Unmarshal(body, &userInfo)
-	// TODO login user if exists, else register user
+
+	var user database.User
+	user.Username = userInfo.Email
+	user.Joined = time.Now().Format("2006-01-02 15:04:05")
+
+	_, err = database.GetUser(userInfo.Email)
+	if err != nil {
+		database.RegisterUser(&user)
+	}
 	claims := jwt.MapClaims{
 		"email": userInfo.Email,
 	}
@@ -68,5 +77,6 @@ func GetJWT(c *fiber.Ctx) error {
 	return c.Status(200).JSON(fiber.Map{
 		"status": "success",
 		"token":  tokenString,
+		"name":   userInfo.Name,
 	})
 }

@@ -8,11 +8,17 @@ import (
 
 // SetupRoutes sets up all routes for the application
 func SetupRoutes(app *fiber.App) {
-	api := app.Group("/shrinkr")
-	// routes
-	api.Get("/", middleware.AuthGuard, handlers.Base)
+	api := app.Group("/")
+	api.Get("/", handlers.Base)
 	api.Get("/login", handlers.Login)
 	api.Get("/token", handlers.GetJWT)
-	api.Post("/addURL/:username", handlers.AddMapping)
-	api.Get("/mappings/:username", handlers.GetAllShortLinks)
+
+	linksAPI := api.Group("/links")
+	linksAPI.Use(middleware.AuthGuard)
+	linksAPI.Post("/addURL", handlers.AddMapping)
+	linksAPI.Get("/mappings", handlers.GetAllShortLinks)
+
+	userAPI := api.Group("/user")
+	userAPI.Use(middleware.AuthGuard)
+	api.Get("/:username", handlers.GetUser)
 }
