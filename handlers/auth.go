@@ -19,7 +19,6 @@ type UserInfo struct {
 	Name  string `json:"name"`
 }
 
-// working
 func Base(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusAccepted).JSON(fiber.Map{
 		"status":  "success",
@@ -27,10 +26,7 @@ func Base(c *fiber.Ctx) error {
 	})
 }
 
-// OAuth2
 func Login(c *fiber.Ctx) error {
-	// send a string containing the URL to redirect to for login
-	// set the state to a unique string to identiffy user later on ClI side
 	state := uuid.New().String()
 	authConfig := config.AuthConf()
 	url := authConfig.AuthCodeURL(state, oauth2.AccessTypeOffline)
@@ -61,9 +57,6 @@ func GetJWT(c *fiber.Ctx) error {
 	body, err := ioutil.ReadAll(userData.Body)
 	var userInfo UserInfo
 	err = json.Unmarshal(body, &userInfo)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON("Cannot unmarshal user data")
-	}
 	// TODO login user if exists, else register user
 	claims := jwt.MapClaims{
 		"email": userInfo.Email,
@@ -72,7 +65,6 @@ func GetJWT(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON("Cannot create JWT token")
 	}
-	fmt.Println(tokenString)
 	return c.Status(200).JSON(fiber.Map{
 		"status": "success",
 		"token":  tokenString,
