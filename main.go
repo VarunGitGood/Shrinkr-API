@@ -28,7 +28,8 @@ func main() {
 	routes.SetupRoutes(app)
 
 	// Static files
-	app.Static("/shrinkr/verified", "./public/verified.html")
+	// add one for if link is password protected
+	// add one for if link is not found
 
 	app.Listen(config.Config("PORT"))
 }

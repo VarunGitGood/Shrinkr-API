@@ -28,21 +28,12 @@ func ConnectRedis() error {
 	return nil
 }
 
-func StoreMapping(link *Link) error {
+func StoreMapping(link *LinkDTO) error {
 	result := rdb.HSet(rctx, "HASH", link.ShortURL, link.LongURL)
 	if result.Err() != nil {
 		return result.Err()
 	}
 	return nil
-}
-
-func GetMappings(username string) (map[string]string, error) {
-	// result := rdb.HGetAll(rctx, username)
-	// if result.Err() != nil {
-	// 	return nil, result.Err()
-	// }
-	// return result.Val(), nil
-	return nil, nil
 }
 
 func GetLongURL(shortURL string) (string, error) {

@@ -7,15 +7,21 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-// store the mapping of short link to long link (short link is generated from CLI)
 func AddMapping(c *fiber.Ctx) error {
-	// username := c.Request().Header.Peek("Email")
-	link := new(database.Link)
+	username := c.Request().Header.Peek("Email")
+	link := new(database.LinkDTO)
 	c.BodyParser(link)
 	if link.ShortURL == "" || link.LongURL == "" || link.Description == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"status":  "error",
 			"message": "Missing required fields",
+		})
+	}
+	err := database.AddURL(link, string(username))
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"status":  "error",
+			"message": "Cannot add mapping",
 		})
 	}
 	if err := database.StoreMapping(link); err != nil {
@@ -30,12 +36,11 @@ func AddMapping(c *fiber.Ctx) error {
 	})
 }
 
-// get list of all short links for a user
 func GetAllShortLinks(c *fiber.Ctx) error {
 	username := c.Request().Header.Peek("Email")
-	mappings, err := database.GetMappings(string(username))
+	mappings, err := database.GetUrlsByUser(string(username))
 	if err != nil {
-		return c.Status(500).JSON(fiber.Map{
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"status":  "error",
 			"message": "Cannot get links",
 		})
@@ -46,7 +51,38 @@ func GetAllShortLinks(c *fiber.Ctx) error {
 	})
 }
 
-// redirect to long link
+func DeleteLink(c *fiber.Ctx) error {
+	username := c.Request().Header.Peek("Email")
+	shortURL := c.Params("shortURL")
+	err := database.DeleteLink(shortURL, string(username))
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"status":  "error",
+			"message": "Cannot delete link",
+		})
+	}
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"status":  "success",
+		"message": "Link deleted",
+	})
+}
+
+func GetLinkById(c *fiber.Ctx) error {
+	username := c.Request().Header.Peek("Email")
+	shortURL := c.Params("shortURL")
+	mapping, err := database.GetLinkInfo(shortURL, string(username))
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"status":  "error",
+			"message": "Cannot get link",
+		})
+	}
+	return c.JSON(fiber.Map{
+		"status": "success",
+		"data":   mapping,
+	})
+}
+
 func RedirectToLongLink(c *fiber.Ctx) error {
 	shortURL := c.Params("shortURL")
 	username := c.Request().Header.Peek("Email")
