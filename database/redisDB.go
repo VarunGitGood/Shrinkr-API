@@ -5,6 +5,7 @@ import (
 	"api/types"
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -30,7 +31,7 @@ func ConnectRedis() error {
 }
 
 func StoreMapping(link *types.LinkDTO) error {
-	result := rdb.Set(rctx, link.ShortURL, link.LongURL, 0)
+	result := rdb.SetEx(rctx, link.ShortURL, link.LongURL, time.Duration(link.Expiration)*time.Second)
 	if result.Err() != nil {
 		fmt.Println(result.Err())
 		return result.Err()

@@ -89,15 +89,10 @@ func GetLinkById(c *fiber.Ctx) error {
 
 func RedirectToLongLink(c *fiber.Ctx) error {
 	shortURL := c.Params("shortURL")
-	fmt.Println(shortURL)
-
 	longURL, err := database.GetLongURL(shortURL)
 	if err != nil {
 		fmt.Println(err.Error())
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status":  "error",
-			"message": "Cannot get long URL",
-		})
+		return c.SendFile("./public/404.html", true)
 	}
 	return c.Redirect(longURL)
 }
