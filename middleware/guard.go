@@ -8,7 +8,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-// AuthGuard is a middleware that checks if the user is authenticated
 func AuthGuard(c *fiber.Ctx) error {
 	tokenString := c.Get("Authorization")
 	if tokenString == "" {
@@ -24,7 +23,7 @@ func AuthGuard(c *fiber.Ctx) error {
 	if err != nil || !token.Valid {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"status":  "error",
-			"message": "Unauthorized",
+			"message": "Please login again",
 		})
 	}
 	claims := token.Claims.(jwt.MapClaims)

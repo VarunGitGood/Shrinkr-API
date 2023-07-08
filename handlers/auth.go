@@ -3,6 +3,7 @@ package handlers
 import (
 	"api/config"
 	"api/database"
+	"api/types"
 	"context"
 	"encoding/json"
 	"io/ioutil"
@@ -59,7 +60,7 @@ func GetJWT(c *fiber.Ctx) error {
 	var userInfo UserInfo
 	err = json.Unmarshal(body, &userInfo)
 
-	var user database.User
+	var user types.User
 	user.Username = userInfo.Email
 	user.Joined = time.Now().Format("2006-01-02 15:04:05")
 

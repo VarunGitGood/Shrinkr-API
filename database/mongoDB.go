@@ -2,6 +2,7 @@ package database
 
 import (
 	"api/config"
+	"api/types"
 	"context"
 	"fmt"
 	"time"
@@ -30,7 +31,7 @@ func ConnectMongo() {
 	fmt.Println("Connected to MongoDB")
 }
 
-func RegisterUser(user *User) error {
+func RegisterUser(user *types.User) error {
 	collection := mdb.Collection("users")
 	_, err := collection.InsertOne(context.Background(), user)
 	if err != nil {
@@ -41,10 +42,10 @@ func RegisterUser(user *User) error {
 	return nil
 }
 
-func GetUser(email string) (*User, error) {
+func GetUser(email string) (*types.User, error) {
 	collection := mdb.Collection("users")
 	filter := bson.D{{"username", email}}
-	var user User
+	var user types.User
 	err := collection.FindOne(context.Background(), filter).Decode(&user)
 	if err != nil {
 		return nil, err
@@ -53,14 +54,14 @@ func GetUser(email string) (*User, error) {
 }
 
 // TODO
-func AddURL(link *LinkDTO, username string) error {
+func AddURL(link *types.LinkDTO, username string) error {
 	collection := mdb.Collection("links")
 	filter := bson.D{{"key", link.ShortURL}}
-	var result LinkInfo
+	var result types.LinkInfo
 	err := collection.FindOne(context.Background(), filter).Decode(&result)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			var linkDoc LinkInfo
+			var linkDoc types.LinkInfo
 			linkDoc.Key = link.ShortURL
 			linkDoc.LongURL = link.LongURL
 			linkDoc.Description = link.Description
@@ -75,15 +76,14 @@ func AddURL(link *LinkDTO, username string) error {
 			fmt.Println("Link added")
 		}
 		fmt.Println(err)
-		return err
 	}
 	return nil
 }
 
-func GetUrlsByUser(username string) ([]LinkInfo, error) {
+func GetUrlsByUser(username string) ([]types.LinkInfo, error) {
 	collection := mdb.Collection("links")
 	filter := bson.D{{"createdBy", username}}
-	var result []LinkInfo
+	var result []types.LinkInfo
 	cursor, err := collection.Find(context.Background(), filter)
 	if err != nil {
 		return nil, err
@@ -105,10 +105,10 @@ func DeleteLink(shortURL string, username string) error {
 	return nil
 }
 
-func GetLinkInfo(shortURL string, username string) (*LinkInfo, error) {
+func GetLinkInfo(shortURL string, username string) (*types.LinkInfo, error) {
 	collection := mdb.Collection("links")
 	filter := bson.D{{"key", shortURL}, {"createdBy", username}}
-	var result LinkInfo
+	var result types.LinkInfo
 	err := collection.FindOne(context.Background(), filter).Decode(&result)
 	if err != nil {
 		return nil, err

@@ -12,7 +12,7 @@ func SetupRoutes(app *fiber.App) {
 	api.Get("/", handlers.Base)
 	api.Get("/login", handlers.Login)
 	api.Get("/token", handlers.GetJWT)
-	api.Get("/shnk/:shortURL", handlers.RedirectToLongLink)
+	api.Get("/:shortURL", handlers.RedirectToLongLink)
 
 	linksAPI := api.Group("/links")
 	linksAPI.Use(middleware.AuthGuard)
@@ -23,5 +23,5 @@ func SetupRoutes(app *fiber.App) {
 
 	userAPI := api.Group("/user")
 	userAPI.Use(middleware.AuthGuard)
-	api.Get("/:username", handlers.GetUser)
+	api.Get("/me", handlers.GetUser)
 }

@@ -8,8 +8,8 @@ import (
 )
 
 func GetUser(c *fiber.Ctx) error {
-	username := c.Params("username")
-	user, err := database.GetUser(username)
+	username := c.Request().Header.Peek("Email")
+	user, err := database.GetUser(string(username))
 	if err != nil {
 		fmt.Println(err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{

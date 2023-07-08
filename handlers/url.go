@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"api/database"
+	"api/types"
 	"fmt"
 
 	"github.com/gofiber/fiber/v2"
@@ -9,12 +10,13 @@ import (
 
 func AddMapping(c *fiber.Ctx) error {
 	username := c.Request().Header.Peek("Email")
-	link := new(database.LinkDTO)
+	link := new(types.LinkDTO)
 	c.BodyParser(link)
-	if link.ShortURL == "" || link.LongURL == "" || link.Description == "" {
+	error := link.Validate()
+	if error != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"status":  "error",
-			"message": "Missing required fields",
+			"message": error.Error(),
 		})
 	}
 	err := database.AddURL(link, string(username))
@@ -24,12 +26,14 @@ func AddMapping(c *fiber.Ctx) error {
 			"message": "Cannot add mapping",
 		})
 	}
+	fmt.Println(link)
 	if err := database.StoreMapping(link); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"status":  "error",
 			"message": "Cannot store mapping",
 		})
 	}
+	fmt.Println("Mapping stored")
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
 		"status":  "success",
 		"message": "Mapping stored",
@@ -85,11 +89,11 @@ func GetLinkById(c *fiber.Ctx) error {
 
 func RedirectToLongLink(c *fiber.Ctx) error {
 	shortURL := c.Params("shortURL")
-	username := c.Request().Header.Peek("Email")
-	fmt.Println(string(username))
+	fmt.Println(shortURL)
+
 	longURL, err := database.GetLongURL(shortURL)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println(err.Error())
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"status":  "error",
 			"message": "Cannot get long URL",

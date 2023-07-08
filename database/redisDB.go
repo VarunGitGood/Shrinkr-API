@@ -2,6 +2,7 @@ package database
 
 import (
 	"api/config"
+	"api/types"
 	"context"
 	"fmt"
 
@@ -28,16 +29,17 @@ func ConnectRedis() error {
 	return nil
 }
 
-func StoreMapping(link *LinkDTO) error {
-	result := rdb.HSet(rctx, "HASH", link.ShortURL, link.LongURL)
+func StoreMapping(link *types.LinkDTO) error {
+	result := rdb.Set(rctx, link.ShortURL, link.LongURL, 0)
 	if result.Err() != nil {
+		fmt.Println(result.Err())
 		return result.Err()
 	}
 	return nil
 }
 
 func GetLongURL(shortURL string) (string, error) {
-	result := rdb.HGet(rctx, "HASH", shortURL)
+	result := rdb.Get(rctx, shortURL)
 	if result.Err() != nil {
 		return "", result.Err()
 	}
