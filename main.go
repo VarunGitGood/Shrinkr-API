@@ -22,14 +22,13 @@ func main() {
 	// Middleware
 	app.Use(logger.New())
 	app.Use(cors.New())
-	app.Use(recover.New())
 
 	// Routes
 	routes.SetupRoutes(app)
 
 	// Static files
 	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello, World 👋!")
+		return c.SendString("Hello, World")
 	})
 	app.Static("/404", "./public/404.html")
 
