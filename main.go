@@ -28,8 +28,10 @@ func main() {
 	routes.SetupRoutes(app)
 
 	// Static files
-	// add one for if link is password protected
-	// add one for if link is not found
+	app.Get("/", func(c *fiber.Ctx) error {
+		return c.SendString("Hello, World 👋!")
+	})
+	app.Static("/404", "./public/404.html")
 
 	app.Listen(config.Config("PORT"))
 }

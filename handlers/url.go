@@ -26,7 +26,6 @@ func AddMapping(c *fiber.Ctx) error {
 			"message": "Cannot add mapping",
 		})
 	}
-	fmt.Println(link)
 	if err := database.StoreMapping(link); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"status":  "error",
@@ -62,7 +61,7 @@ func DeleteLink(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"status":  "error",
-			"message": "Cannot delete link",
+			"message": err.Error(),
 		})
 	}
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
@@ -92,7 +91,7 @@ func RedirectToLongLink(c *fiber.Ctx) error {
 	longURL, err := database.GetLongURL(shortURL)
 	if err != nil {
 		fmt.Println(err.Error())
-		return c.SendFile("./public/404.html", true)
+		return c.Redirect("/404")
 	}
 	return c.Redirect(longURL)
 }

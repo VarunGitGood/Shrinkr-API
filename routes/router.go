@@ -23,5 +23,6 @@ func SetupRoutes(app *fiber.App) {
 
 	userAPI := api.Group("/user")
 	userAPI.Use(middleware.AuthGuard)
-	api.Get("/me", handlers.GetUser)
+	userAPI.Get("/me", handlers.Verify)
+	userAPI.Get("/info", handlers.GetUser)
 }

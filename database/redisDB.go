@@ -31,7 +31,12 @@ func ConnectRedis() error {
 }
 
 func StoreMapping(link *types.LinkDTO) error {
-	result := rdb.SetEx(rctx, link.ShortURL, link.LongURL, time.Duration(link.Expiration)*time.Second)
+	var result *redis.StatusCmd
+	if link.Expiration == 0 {
+		result = rdb.Set(rctx, link.ShortURL, link.LongURL, 0)
+	} else {
+		result = rdb.Set(rctx, link.ShortURL, link.LongURL, time.Duration(link.Expiration)*time.Second)
+	}
 	if result.Err() != nil {
 		fmt.Println(result.Err())
 		return result.Err()

@@ -4,6 +4,7 @@ import (
 	"api/config"
 	"api/types"
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -42,17 +43,6 @@ func RegisterUser(user *types.User) error {
 	return nil
 }
 
-func GetUser(email string) (*types.User, error) {
-	collection := mdb.Collection("users")
-	filter := bson.D{{"username", email}}
-	var user types.User
-	err := collection.FindOne(context.Background(), filter).Decode(&user)
-	if err != nil {
-		return nil, err
-	}
-	return &user, nil
-}
-
 // TODO
 func AddURL(link *types.LinkDTO, username string) error {
 	collection := mdb.Collection("links")
@@ -67,6 +57,7 @@ func AddURL(link *types.LinkDTO, username string) error {
 			linkDoc.Description = link.Description
 			linkDoc.CreatedBy = username
 			linkDoc.Created = time.Now().Format("2006-01-02 15:04:05")
+			linkDoc.Expiration = link.Expiration
 			// TODO
 			//  also add checks for passcode and clicks and expiration
 			_, err := collection.InsertOne(context.Background(), linkDoc)
@@ -78,6 +69,25 @@ func AddURL(link *types.LinkDTO, username string) error {
 		fmt.Println(err)
 	}
 	return nil
+}
+
+func GetUser(email string) (*types.User, error) {
+	collection := mdb.Collection("users")
+	filter := bson.D{{"username", email}}
+	var user types.User
+	err := collection.FindOne(context.Background(), filter).Decode(&user)
+	if err != nil {
+		return nil, err
+	}
+	// count number of links created by user
+	collection = mdb.Collection("links")
+	filter = bson.D{{"createdBy", email}}
+	count, err := collection.CountDocuments(context.Background(), filter)
+	if err != nil {
+		return nil, err
+	}
+	user.Links = int(count)
+	return &user, nil
 }
 
 func GetUrlsByUser(username string) ([]types.LinkInfo, error) {
@@ -97,10 +107,13 @@ func GetUrlsByUser(username string) ([]types.LinkInfo, error) {
 func DeleteLink(shortURL string, username string) error {
 	collection := mdb.Collection("links")
 	filter := bson.D{{"key", shortURL}, {"createdBy", username}}
-	_, err := collection.DeleteOne(context.Background(), filter)
+	res , err := collection.DeleteOne(context.Background(), filter)
 	if err != nil {
 		fmt.Println(err)
 		return err
+	}
+	if(res.DeletedCount == 0) {
+		return errors.New("No such link exists")
 	}
 	return nil
 }
