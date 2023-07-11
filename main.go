@@ -31,7 +31,6 @@ func main() {
 		return c.SendString("Hello, World")
 	})
 	app.Static("/404", "./public/404.html")
-
-	app.Listen(config.Config("PORT"))
+	app.Listen(config.Config("FIBER_PORT"))
 	fmt.Println("Server is running on port", config.Config("PORT"))
 }
