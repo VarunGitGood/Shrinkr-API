@@ -43,32 +43,43 @@ func RegisterUser(user *types.User) error {
 	return nil
 }
 
-// TODO
-func AddURL(link *types.LinkDTO, username string) error {
+func CheckIfShortURLExists(shortURL string) bool {
 	collection := mdb.Collection("links")
-	filter := bson.D{{"key", link.ShortURL}}
+	filter := bson.D{{"key", shortURL}}
 	var result types.LinkInfo
 	err := collection.FindOne(context.Background(), filter).Decode(&result)
-	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			var linkDoc types.LinkInfo
-			linkDoc.Key = link.ShortURL
-			linkDoc.LongURL = link.LongURL
-			linkDoc.Description = link.Description
-			linkDoc.CreatedBy = username
-			linkDoc.Created = time.Now().Format("2006-01-02 15:04:05")
-			linkDoc.Expiration = link.Expiration
-			// TODO
-			//  also add checks for passcode and clicks and expiration
-			_, err := collection.InsertOne(context.Background(), linkDoc)
-			if err != nil {
-				fmt.Println(err)
-			}
-			fmt.Println("Link added")
-		}
+	if err == mongo.ErrNoDocuments {
+		return false
+	} else if err != nil {
 		fmt.Println(err)
+		return false
 	}
-	return nil
+	return true
+}
+
+func AddURL(link *types.LinkDTO, username string) error {
+	doesExist := CheckIfShortURLExists(link.ShortURL)
+	if !doesExist {
+		collection := mdb.Collection("links")
+		var linkDoc types.LinkInfo
+		linkDoc.Key = link.ShortURL
+		linkDoc.LongURL = link.LongURL
+		linkDoc.Description = link.Description
+		linkDoc.CreatedBy = username
+		linkDoc.Created = time.Now().Format("2006-01-02 15:04:05")
+		linkDoc.Expiration = link.Expiration
+		// TODO
+		//  also add checks for passcode and clicks and expiration
+		_, err := collection.InsertOne(context.Background(), linkDoc)
+		if err != nil {
+			fmt.Println(err)
+		}
+		fmt.Println("Link added")
+		return nil
+	} else {
+		fmt.Println("Link already exists")
+		return &types.CustomError{Message: "Link already exists", Status: 403}
+	}
 }
 
 func GetUser(email string) (*types.User, error) {
@@ -107,12 +118,12 @@ func GetUrlsByUser(username string) ([]types.LinkInfo, error) {
 func DeleteLink(shortURL string, username string) error {
 	collection := mdb.Collection("links")
 	filter := bson.D{{"key", shortURL}, {"createdBy", username}}
-	res , err := collection.DeleteOne(context.Background(), filter)
+	res, err := collection.DeleteOne(context.Background(), filter)
 	if err != nil {
 		fmt.Println(err)
 		return err
 	}
-	if(res.DeletedCount == 0) {
+	if res.DeletedCount == 0 {
 		return errors.New("No such link exists")
 	}
 	return nil

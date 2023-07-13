@@ -15,15 +15,15 @@ func AddMapping(c *fiber.Ctx) error {
 	error := link.Validate()
 	if error != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"status":  "error",
 			"message": error.Error(),
 		})
 	}
 	err := database.AddURL(link, string(username))
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status":  "error",
-			"message": "Cannot add mapping",
+		err := err.(*types.CustomError)
+		return c.Status(err.StatusCode()).JSON(fiber.Map{
+			"status":  err.StatusCode(),
+			"message": err.Error(),
 		})
 	}
 	if err := database.StoreMapping(link); err != nil {
@@ -90,6 +90,7 @@ func RedirectToLongLink(c *fiber.Ctx) error {
 	shortURL := c.Params("shortURL")
 	longURL, err := database.GetLongURL(shortURL)
 	if err != nil {
+		fmt.Printf(longURL)
 		fmt.Println(err.Error())
 		return c.Redirect("/404")
 	}
